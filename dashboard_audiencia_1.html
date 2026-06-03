@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audiência · InvestNews</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Light mode · paleta Nubank (roxo #820AD1) */
+  --ink:#FAF6FD; --ink2:#F7F1FC; --panel:#FFFFFF; --panel2:#F4E9FB;
+  --line:#ECE2F5; --line2:#DFCDEF;
+  --txt:#1A1326; --muted:#6F6A77; --faint:#9A93A3;
+  --accent:#820AD1; --accent2:#A24BE0; --warn:#F2A900; --bad:#E5484D; --good:#00A868;
+  --grad:linear-gradient(135deg,#820AD1,#A24BE0);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--txt);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased}
+body{background:
+  radial-gradient(900px 520px at 88% -8%,rgba(130,10,209,.10),transparent 60%),
+  radial-gradient(720px 520px at -5% 8%,rgba(162,75,224,.07),transparent 55%),
+  var(--ink);min-height:100vh}
+.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:32px 26px 70px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:13px}
+.dot{width:13px;height:13px;border-radius:3px;background:var(--grad);box-shadow:0 0 18px rgba(130,10,209,.35);transform:rotate(45deg)}
+.kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-family:'Fraunces',serif;font-weight:900;font-size:40px;line-height:.98;margin:6px 0 0;letter-spacing:-.01em}
+h1 em{font-style:italic;font-weight:400;color:var(--muted)}
+.sub{color:var(--muted);font-size:13.5px;margin-top:9px;max-width:430px}
+.period-badge{text-align:right}
+.period-badge .lab{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.period-badge .val{font-family:'Fraunces',serif;font-size:21px;margin-top:3px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--ink2);border:1px solid var(--line);border-radius:13px;padding:5px;margin-bottom:22px;width:fit-content}
+.tab{border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:600;
+  padding:9px 20px;border-radius:9px;cursor:pointer;transition:.18s;letter-spacing:.01em}
+.tab:hover{color:var(--txt)}
+.tab.on{background:var(--panel2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line2)}
+
+/* Controls */
+.controls{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;background:var(--panel);
+  border:1px solid var(--line);border-radius:15px;padding:18px 20px;margin-bottom:22px}
+.ctl{display:flex;flex-direction:column;gap:7px}
+.ctl label{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:600}
+select{appearance:none;background:var(--ink2);color:var(--txt);border:1px solid var(--line2);border-radius:9px;
+  padding:9px 34px 9px 13px;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238aa39b' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+select:focus{outline:none;border-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:var(--ink2);color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 14px;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button:not(.on):hover{color:var(--txt)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:240px}
+.chip{border:1px solid var(--line2);background:var(--ink2);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;
+  padding:7px 13px;border-radius:30px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.chip .sw{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.85}
+.chip.on{color:var(--txt);border-color:transparent}
+.chip:not(.on){opacity:.55}
+.chip:hover{opacity:1}
+.linkbtn{margin-left:auto;align-self:center;background:none;border:0;color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px 18px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(91,10,145,.06)}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad)}
+.kpi .lab{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.kpi .num{font-family:'Fraunces',serif;font-weight:600;font-size:30px;margin-top:8px;line-height:1}
+.kpi .meta{font-size:12px;color:var(--muted);margin-top:8px}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;margin-left:6px}
+.pill.pos{background:rgba(0,168,104,.14)}.pill.neg{background:rgba(229,72,77,.14)}
+
+/* Chart panels */
+.grid{display:grid;grid-template-columns:1.62fr 1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(91,10,145,.06)}
+.card h3{font-family:'Fraunces',serif;font-weight:600;font-size:18px;margin:0 0 3px}
+.card .desc{font-size:12px;color:var(--muted);margin-bottom:16px}
+.chart-box{position:relative;height:340px}
+.chart-box.sm{height:300px}
+@media(max-width:880px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}h1{font-size:32px}}
+
+/* Table */
+.tablewrap{overflow-x:auto;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+thead th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;border-bottom:1px solid var(--line2)}
+tbody tr:hover{background:var(--panel2)}
+td.v{font-family:'IBM Plex Mono',monospace}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hide{display:none!important}
+.legend-note{font-size:11.5px;color:var(--faint);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand"><span class="dot"></span><span class="kicker">InvestNews · Canais Orgânicos</span></div>
+      <h1>Audiência <em>do portal</em></h1>
+      <p class="sub">Sessões, pageviews e usuários por categoria de conteúdo, distribuição por canal e participação AMP.</p>
+    </div>
+    <div class="period-badge">
+      <div class="lab">Janela analisada</div>
+      <div class="val mono" id="periodLabel">—</div>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-view="conteudo">Conteúdo</button>
+    <button class="tab" data-view="canais">Canais</button>
+    <button class="tab" data-view="amp">AMP vs Web</button>
+  </div>
+
+  <!-- ===== CONTROLS ===== -->
+  <div class="controls">
+    <div class="ctl" id="metricCtl">
+      <label>Métrica</label>
+      <select id="metric">
+        <option value="Sessões">Sessões</option>
+        <option value="Pageviews">Pageviews</option>
+        <option value="Usuários">Usuários</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label>De</label>
+      <select id="from"></select>
+    </div>
+    <div class="ctl">
+      <label>Até</label>
+      <select id="to"></select>
+    </div>
+    <div class="ctl" id="chartTypeCtl">
+      <label>Visualização</label>
+      <div class="seg" id="chartType">
+        <button data-t="line" class="on">Linha</button>
+        <button data-t="bar">Barras</button>
+        <button data-t="stack">Empilhado</button>
+      </div>
+    </div>
+    <div class="ctl" id="chipsCtl" style="flex:1">
+      <label id="chipsLabel">Séries</label>
+      <div class="chips" id="chips"></div>
+    </div>
+    <button class="linkbtn" id="toggleAll">alternar todas</button>
+  </div>
+
+  <!-- ===== KPIs ===== -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ===== CHARTS ===== -->
+  <div class="grid">
+    <div class="card">
+      <h3 id="mainTitle">Evolução mensal</h3>
+      <div class="desc" id="mainDesc">Série temporal das categorias selecionadas.</div>
+      <div class="chart-box"><canvas id="mainChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 id="sideTitle">Composição</h3>
+      <div class="desc" id="sideDesc">Participação no último mês da janela.</div>
+      <div class="chart-box sm"><canvas id="sideChart"></canvas></div>
+      <div class="legend-note" id="sideNote"></div>
+    </div>
+  </div>
+
+  <!-- ===== TABLE ===== -->
+  <div class="card" style="margin-top:16px">
+    <h3>Tabela detalhada</h3>
+    <div class="desc" id="tableDesc">Valores mensais e variações MoM / YoY.</div>
+    <div class="tablewrap"><table id="table"></table></div>
+  </div>
+
+  <div class="foot">
+    <span>Fonte: Planilha Global – Canais orgânicos · aba <strong>Audiência</strong></span>
+    <span class="mono" id="rowcount"></span>
+  </div>
+</div>
+
+<script>
+const DATA = {"meta": {"source": "Planilha Global – Canais orgânicos – InvestNews", "sheet": "Audiência", "months": ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05"]}, "metrics": {"Sessões": [{"name": "Guias + Perfis", "values": [105959.0, 103005.0, 101739.0, 141097.0, 97942.0, 85402.0, 68630.0, 89332.0, 68244.0, 53188.0, 51695.0, 45078.0, 36285.0, 52635.0], "mom": 0.4505994212, "yoy": -0.4890053881}, {"name": "Editorias", "values": [1004322.0, 1300719.0, 762449.0, 1031405.0, 1361339.0, 784160.0, 1152938.0, 1037459.0, 863667.0, 1159745.0, 1401614.0, 986216.0, 823386.0, 901442.0], "mom": 0.09479879425, "yoy": -0.3069663778}, {"name": "Ferramentas", "values": [445206.0, 430021.0, 398414.0, 428979.0, 374853.0, 368417.0, 433100.0, 614451.0, 455729.0, 335031.0, 280232.0, 267095.0, 286188.0, 318200.0], "mom": 0.1118565419, "yoy": -0.2600361378}, {"name": "Home + Últimas Notícias", "values": [58299.0, 53732.0, 55441.0, 67469.0, 76152.0, 74238.0, 88228.0, 82038.0, 80338.0, 85267.0, 75907.0, 86759.0, 82126.0, 78184.0], "mom": -0.04799941553, "yoy": 0.4550733269}, {"name": "Cotação", "values": [3741.0, 3580.0, 2485.0, 3050.0, 2364.0, 2328.0, 3157.0, 4129.0, 5037.0, 2998.0, 2855.0, 4967.0, 4635.0, 8852.0], "mom": 0.9098166127, "yoy": 1.472625698}, {"name": "Autor", "values": [1491.0, 1149.0, 1733.0, 1879.0, 2259.0, 1859.0, 2867.0, 2867.0, 3015.0, 2345.0, 3408.0, 2906.0, 2947.0, 5571.0], "mom": 0.8903970139, "yoy": 3.848563969}, {"name": "Tag", "values": [1328.0, 1925.0, 2097.0, 3379.0, 2146.0, 2095.0, 5171.0, 10409.0, 7432.0, 5120.0, 5024.0, 5738.0, 6962.0, 14429.0], "mom": 1.072536627, "yoy": 6.495584416}, {"name": "Patrocinados", "values": [309.0, 337.0, 155.0, 278.0, 274.0, 204.0, 8573.0, 37539.0, 41370.0, 28250.0, 21282.0, 14207.0, 23959.0, 2527.0], "mom": -0.8945281523, "yoy": 6.49851632}, {"name": "Opinião", "values": [97.0, 62.0, 455.0, 74.0, 87.0, 77.0, 99.0, 174.0, 1300.0, 81.0, 85.0, 100.0, 153.0, 1444.0], "mom": 8.437908497, "yoy": 22.29032258}], "Pageviews": [{"name": "Home + Últimas Notícias", "values": [425825.0, 438282.0, 398763.0, 349701.0, 371761.0, 412159.0, 592075.0, 512271.0, 520322.0, 559704.0, 531578.0, 638841.0, 566806.0, 551706.0], "mom": -0.02664050839, "yoy": 0.2587922844}, {"name": "Editorias", "values": [1054900.0, 1366154.0, 848866.0, 1129418.0, 1472904.0, 983711.0, 1262928.0, 1146813.0, 966667.0, 1333866.0, 1702817.0, 1058680.0, 963715.0, 1056748.0], "mom": 0.09653580156, "yoy": -0.2264795916}, {"name": "Guias + Perfis", "values": [108715.0, 106242.0, 105487.0, 146069.0, 105188.0, 87819.0, 70424.0, 95564.0, 76086.0, 56146.0, 55480.0, 49224.0, 42046.0, 55618.0], "mom": 0.322789326, "yoy": -0.4764970539}, {"name": "Ferramentas", "values": [512108.0, 486124.0, 457622.0, 488340.0, 433489.0, 410680.0, 474507.0, 712774.0, 519416.0, 375376.0, 317836.0, 300177.0, 341651.0, 360790.0], "mom": 0.05601915405, "yoy": -0.2578231069}, {"name": "Patrocinados", "values": [341.0, 398.0, 166.0, 341.0, 363.0, 307.0, 9401.0, 39609.0, 46458.0, 29709.0, 21572.0, 14567.0, 24376.0, 2701.0], "mom": -0.8891942895, "yoy": 5.786432161}, {"name": "Tag", "values": [1627.0, 2368.0, 2583.0, 4050.0, 2759.0, 2757.0, 6289.0, 11548.0, 12643.0, 5990.0, 6219.0, 6544.0, 7280.0, 15640.0], "mom": 1.148351648, "yoy": 5.60472973}, {"name": "Cotação", "values": [4053.0, 3869.0, 3058.0, 4097.0, 3142.0, 2899.0, 3689.0, 4715.0, 7923.0, 3502.0, 3816.0, 5473.0, 5510.0, 9538.0], "mom": 0.7310344828, "yoy": 1.465236495}, {"name": "Autor", "values": [1862.0, 1501.0, 2141.0, 2481.0, 2926.0, 2473.0, 3639.0, 3568.0, 4135.0, 3144.0, 4250.0, 3803.0, 3792.0, 6160.0], "mom": 0.6244725738, "yoy": 3.103930713}, {"name": "Opinião", "values": [118.0, 122.0, 522.0, 103.0, 123.0, 100.0, 128.0, 204.0, 1519.0, 113.0, 124.0, 144.0, 185.0, 1459.0], "mom": 6.886486486, "yoy": 10.95901639}], "Usuários": [{"name": "Home + Últimas Notícias", "values": [20507.0, 18644.0, 19511.0, 21072.0, 26017.0, 25941.0, 38061.0, 33927.0, 34986.0, 35319.0, 31487.0, 32902.0, 33678.0, 29833.0], "mom": -0.1141694875, "yoy": 0.6001394551}, {"name": "Editorias", "values": [847969.0, 1125876.0, 665475.0, 857901.0, 1080991.0, 670876.0, 932825.0, 869276.0, 724462.0, 959670.0, 1200382.0, 806795.0, 688482.0, 774081.0], "mom": 0.1243300478, "yoy": -0.3124633619}, {"name": "Guias + Perfis", "values": [93776.0, 93641.0, 88203.0, 118899.0, 85509.0, 71923.0, 57465.0, 76976.0, 57816.0, 46380.0, 45381.0, 39788.0, 31517.0, 45482.0], "mom": 0.4430942031, "yoy": -0.5142939524}, {"name": "Ferramentas", "values": [317938.0, 295647.0, 261527.0, 272479.0, 240909.0, 233287.0, 276622.0, 277464.0, 321032.0, 205033.0, 171574.0, 163715.0, 183148.0, 199811.0], "mom": 0.09098106449, "yoy": -0.3241568492}, {"name": "Patrocinados", "values": [283.0, 306.0, 138.0, 249.0, 241.0, 161.0, 8020.0, 31262.0, 36449.0, 23851.0, 17612.0, 12437.0, 21751.0, 2141.0], "mom": -0.901567744, "yoy": 5.996732026}, {"name": "Tag", "values": [1092.0, 1658.0, 1743.0, 2932.0, 1777.0, 1677.0, 4495.0, 9746.0, 6580.0, 4514.0, 4447.0, 4902.0, 6193.0, 13612.0], "mom": 1.197965445, "yoy": 7.209891435}, {"name": "Cotação", "values": [3145.0, 3392.0, 2206.0, 2547.0, 1878.0, 1860.0, 2426.0, 3648.0, 4314.0, 2492.0, 2417.0, 4241.0, 3993.0, 8130.0], "mom": 1.03606311, "yoy": 1.396816038}, {"name": "Autor", "values": [1264.0, 962.0, 1454.0, 1440.0, 1840.0, 1447.0, 2396.0, 2408.0, 2733.0, 1938.0, 2857.0, 2358.0, 2538.0, 5084.0], "mom": 1.003152088, "yoy": 4.284823285}, {"name": "Opinião", "values": [79.0, 53.0, 413.0, 68.0, 70.0, 64.0, 90.0, 169.0, 1269.0, 71.0, 64.0, 93.0, 140.0, 1438.0], "mom": 9.271428571, "yoy": 26.13207547}]}, "channels": {"months": ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05"], "series": [{"name": "Paid Search", "values": [898975.0, 919753.0, 598856.0, 1186090.0, 504304.0, 509436.0, 495271.0, 781076.0, 610883.0, 517839.0, 424686.0, 509028.0, 489089.0, 642831.0], "mom": 0.3143436062, "yoy": -0.3010830082}, {"name": "Direct", "values": [265764.0, 361655.0, 228310.0, 890004.0, 706869.0, 352686.0, 608957.0, 499585.0, 416704.0, 584229.0, 859163.0, 441965.0, 384942.0, 333869.0], "mom": -0.1326771306, "yoy": -0.07683012816}, {"name": "Organic Search", "values": [443217.0, 553846.0, 316618.0, 1014272.0, 612792.0, 400335.0, 541579.0, 490898.0, 372825.0, 458006.0, 398713.0, 337274.0, 247427.0, 233897.0], "mom": -0.05468279533, "yoy": -0.5776858549}, {"name": "Cross-network", "values": [5546.0, 88375.0, 145825.0, 180560.0, 5490.0, 4018.0, 13685.0, 40492.0, 42271.0, 30462.0, 41523.0, 36969.0, 47734.0, 80781.0], "mom": 0.6923157498, "yoy": -0.08592927864}, {"name": "Referral", "values": [9365.0, 10275.0, 9380.0, 27594.0, 15842.0, 15090.0, 18518.0, 26556.0, 14153.0, 20579.0, 13819.0, 14077.0, 12139.0, 16080.0], "mom": 0.3246560672, "yoy": 0.5649635036}, {"name": "Email", "values": [7617.0, 5985.0, 4841.0, 13776.0, 10949.0, 18646.0, 13498.0, 12439.0, 13150.0, 13161.0, 22749.0, 12681.0, 15336.0, 40827.0], "mom": 1.662167449, "yoy": 5.821553885}, {"name": "Unassigned", "values": [5328.0, 7251.0, 5342.0, 13748.0, 6962.0, 7712.0, 16278.0, 13741.0, 14561.0, 12408.0, 10632.0, 15417.0, 34907.0, 42052.0], "mom": 0.204686739, "yoy": 4.799475934}, {"name": "Organic Social", "values": [5639.0, 3880.0, 3164.0, 10972.0, 6077.0, 4812.0, 7374.0, 20454.0, 5004.0, 6527.0, 6165.0, 7812.0, 5434.0, 5106.0], "mom": -0.06036069194, "yoy": 0.3159793814}, {"name": "Paid Other", "values": [3.0, 3.0, 1.0, 1010.0, 2292.0, 1744.0, 707.0, 523.0, 884.0, 795.0, 752.0, 921.0, 3604.0, 25165.0], "mom": 5.982519423, "yoy": 8387.333333}, {"name": "Display", "values": [113.0, 84.0, 5322.0, 314.0, 124.0, 135.0, 168.0, 157.0, 96.0, 114.0, 91.0, 410.0, 2782.0, 3269.0], "mom": 0.175053918, "yoy": 37.91666667}, {"name": "Organic Video", "values": [334.0, 316.0, 204.0, 1440.0, 412.0, 204.0, 238.0, 220.0, 149.0, 218.0, 82.0, 232.0, 230.0, 1245.0], "mom": 4.413043478, "yoy": 2.939873418}, {"name": "Paid Social", "values": [37.0, 54.0, 55.0, 264.0, 102.0, 90.0, 79.0, 101.0, 122.0, 134.0, 107.0, 152.0, 123.0, 1078.0], "mom": 7.764227642, "yoy": 18.96296296}, {"name": "Organic Shopping", "values": [0.0, 0.0, 0.0, 0.0, 14.0, 0.0, 39.0, 89.0, 23.0, 0.0, 0.0, 0.0, 2.0, 29.0], "mom": 13.5, "yoy": "#DIV/0!"}, {"name": "Mobile Push Notifications", "values": [13.0, 5.0, 8.0, 8.0, 6.0, 11.0, 8.0, 19.0, 11.0, 9.0, 3.0, 6.0, 2.0, 6.0], "mom": 2, "yoy": 0.2}, {"name": "Paid Video", "values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 46.0, 14.0, 23.0], "mom": 0.6428571429, "yoy": "#DIV/0!"}]}, "amp": {"rows": [{"month": "2026-10", "amp": 704943.0, "nonAmp": 390913.0, "total": 1095856, "shareAmp": 0.6432806865, "shareNonAmp": 0.3567193135}, {"month": "2026-11", "amp": 520789.0, "nonAmp": 385232.0, "total": 906021, "shareAmp": 0.5748089724, "shareNonAmp": 0.4251910276}, {"month": "2026-12", "amp": 420666.0, "nonAmp": 327654.0, "total": 748320, "shareAmp": 0.5621472097, "shareNonAmp": 0.4378527903}, {"month": "2026-01", "amp": 616290.0, "nonAmp": 310821.0, "total": 927111, "shareAmp": 0.6647424095, "shareNonAmp": 0.3352575905}, {"month": "2026-02", "amp": 894500.0, "nonAmp": 286938.0, "total": 1181438, "shareAmp": 0.7571281777, "shareNonAmp": 0.2428718223}, {"month": "2026-03", "amp": 380550.0, "nonAmp": 308158.0, "total": 688708, "shareAmp": 0.5525563809, "shareNonAmp": 0.4474436191}, {"month": "2026-04", "amp": 317263.0, "nonAmp": 277366.0, "total": 594629, "shareAmp": 0.5335478088, "shareNonAmp": 0.4664521912}, {"month": "2026-05", "amp": 199227.0, "nonAmp": 343689.0, "total": 542916, "shareAmp": 0.3669573194, "shareNonAmp": 0.6330426806}]}};
+const PALETTE = ['#820AD1','#A24BE0','#6B1FB0','#00A868','#3E63DD','#D6409F','#F2A900','#0EA5C4','#E5484D','#7C5CFF','#12A594','#946800','#C98BEC','#E54666','#5B0A91'];
+const MONTHS = DATA.meta.months;
+const MNAME = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function fmtMonth(ym){const [y,m]=ym.split('-');return MNAME[+m-1]+'/'+y.slice(2);}
+function fmtNum(n){if(n==null||isNaN(n))return '—';const a=Math.abs(n);
+  if(a>=1e6)return (n/1e6).toFixed(a>=1e7?1:2).replace('.',',')+'M';
+  if(a>=1e3)return (n/1e3).toFixed(a>=1e5?0:1).replace('.',',')+'k';
+  return Math.round(n).toLocaleString('pt-BR');}
+function fmtFull(n){return n==null||isNaN(n)?'—':Math.round(n).toLocaleString('pt-BR');}
+function fmtPct(p){if(p==null||isNaN(p))return '—';return (p>=0?'+':'')+(p*100).toFixed(1).replace('.',',')+'%';}
+
+let state={view:'conteudo',metric:'Sessões',from:0,to:MONTHS.length-1,chartType:'line',active:{}};
+let mainChart,sideChart;
+
+/* ---------- data access per view ---------- */
+function currentSeries(){
+  if(state.view==='conteudo') return DATA.metrics[state.metric];
+  if(state.view==='canais') return DATA.channels.series;
+  return null;
+}
+function seriesNames(){const s=currentSeries();return s?s.map(x=>x.name):[];}
+
+/* ---------- build month selectors ---------- */
+function buildMonthSelectors(){
+  const from=document.getElementById('from'), to=document.getElementById('to');
+  from.innerHTML=to.innerHTML='';
+  MONTHS.forEach((m,i)=>{
+    from.insertAdjacentHTML('beforeend',`<option value="${i}">${fmtMonth(m)}</option>`);
+    to.insertAdjacentHTML('beforeend',`<option value="${i}">${fmtMonth(m)}</option>`);
+  });
+  from.value=state.from; to.value=state.to;
+}
+
+/* ---------- chips ---------- */
+function buildChips(){
+  const wrap=document.getElementById('chips'); wrap.innerHTML='';
+  const names=seriesNames();
+  // default: top 5 by total active
+  if(Object.keys(state.active).length===0 || state._rebuildActive){
+    state.active={};
+    const totals=names.map((n,i)=>{const s=currentSeries()[i];return {n,t:s.values.reduce((a,b)=>a+(b||0),0)}});
+    totals.sort((a,b)=>b.t-a.t);
+    totals.forEach((o,idx)=>state.active[o.n]= idx<5);
+    state._rebuildActive=false;
+  }
+  names.forEach((n,i)=>{
+    const on=state.active[n]!==false && state.active[n]!==undefined ? state.active[n] : false;
+    const c=PALETTE[i%PALETTE.length];
+    const b=document.createElement('button');
+    b.className='chip'+(state.active[n]?' on':'');
+    b.style.color=state.active[n]?c:'';
+    b.innerHTML=`<span class="sw" style="background:${c}"></span>${n}`;
+    b.onclick=()=>{state.active[n]=!state.active[n];render();};
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- KPIs ---------- */
+function renderKPIs(){
+  const box=document.getElementById('kpis'); box.innerHTML='';
+  const f=state.from,t=state.to;
+  if(state.view==='amp'){
+    const rows=DATA.amp.rows;
+    const tot=rows.reduce((a,r)=>a+(r.total||0),0);
+    const amp=rows.reduce((a,r)=>a+(r.amp||0),0);
+    const nonamp=rows.reduce((a,r)=>a+(r.nonAmp||0),0);
+    const last=rows[rows.length-1];
+    const cards=[
+      ['Total acessos',fmtNum(tot),`${rows.length} meses`],
+      ['AMP acumulado',fmtNum(amp),`${(amp/tot*100).toFixed(0)}% do total`],
+      ['Web (Non-AMP)',fmtNum(nonamp),`${(nonamp/tot*100).toFixed(0)}% do total`],
+      ['Share AMP · últ. mês',(last.shareAmp*100).toFixed(0)+'%',fmtMonth(last.month)],
+    ];
+    cards.forEach(c=>box.insertAdjacentHTML('beforeend',
+      `<div class="kpi"><div class="lab">${c[0]}</div><div class="num mono">${c[1]}</div><div class="meta">${c[2]}</div></div>`));
+    return;
+  }
+  const series=currentSeries();
+  const actNames=series.filter(s=>state.active[s.name]);
+  // aggregate selected series over window
+  const periodTotal=actNames.reduce((a,s)=>a+s.values.slice(f,t+1).reduce((x,y)=>x+(y||0),0),0);
+  const lastTotal=actNames.reduce((a,s)=>a+(s.values[t]||0),0);
+  const prevTotal=actNames.reduce((a,s)=>a+(s.values[t-1]||0),0);
+  const mom= prevTotal? (lastTotal-prevTotal)/prevTotal : null;
+  // leader in last month
+  let leader={name:'—',v:-1};
+  actNames.forEach(s=>{if((s.values[t]||0)>leader.v)leader={name:s.name,v:s.values[t]||0};});
+  const unit=state.view==='canais'?'sessões':state.metric.toLowerCase();
+  const cards=[
+    ['Total no período',fmtNum(periodTotal),`${actNames.length} séries · ${unit}`],
+    [`Último mês · ${fmtMonth(MONTHS[t])}`,fmtNum(lastTotal),`soma das séries ativas`],
+    ['Variação MoM',(mom==null?'—':fmtPct(mom)),'vs. mês anterior',mom],
+    ['Maior série · últ. mês',fmtNum(leader.v),leader.name],
+  ];
+  cards.forEach(c=>{
+    let cls='',pill='';
+    if(c.length>3 && c[3]!=null){cls=c[3]>=0?'pos':'neg';}
+    box.insertAdjacentHTML('beforeend',
+      `<div class="kpi"><div class="lab">${c[0]}</div><div class="num mono ${cls}">${c[1]}</div><div class="meta">${c[2]}</div></div>`);
+  });
+}
+
+/* ---------- charts ---------- */
+function gridColor(){return 'rgba(26,19,38,.07)';}
+const baseOpts={responsive:true,maintainAspectRatio:false,
+  interaction:{mode:'index',intersect:false},
+  plugins:{legend:{display:false},
+    tooltip:{backgroundColor:'#FFFFFF',borderColor:'#ECE2F5',borderWidth:1,padding:11,
+      titleColor:'#1A1326',bodyColor:'#1A1326',
+      titleFont:{family:'IBM Plex Sans',weight:'600'},bodyFont:{family:'IBM Plex Mono'},
+      callbacks:{label:c=>' '+c.dataset.label+': '+fmtFull(c.parsed.y)}}},
+  scales:{x:{grid:{color:gridColor()},ticks:{color:'#8a8392',font:{family:'IBM Plex Mono',size:10}}},
+          y:{grid:{color:gridColor()},ticks:{color:'#8a8392',font:{family:'IBM Plex Mono',size:10},callback:v=>fmtNum(v)}}}};
+
+function renderMainChart(){
+  const f=state.from,t=state.to;
+  const labels=MONTHS.slice(f,t+1).map(fmtMonth);
+  const ctx=document.getElementById('mainChart');
+  if(mainChart)mainChart.destroy();
+
+  if(state.view==='amp'){
+    document.getElementById('mainTitle').textContent='AMP vs Web ao longo do tempo';
+    document.getElementById('mainDesc').textContent='Acessos orgânicos por origem de página.';
+    const rows=DATA.amp.rows;
+    mainChart=new Chart(ctx,{type:'bar',data:{labels:rows.map(r=>fmtMonth(r.month)),
+      datasets:[
+        {label:'AMP',data:rows.map(r=>r.amp),backgroundColor:'#820AD1',stack:'s',borderRadius:4},
+        {label:'Non-AMP (Web)',data:rows.map(r=>r.nonAmp),backgroundColor:'#A24BE0',stack:'s',borderRadius:4},
+      ]},options:{...baseOpts,scales:{x:{...baseOpts.scales.x,stacked:true},y:{...baseOpts.scales.y,stacked:true}}}});
+    return;
+  }
+
+  const series=currentSeries().filter(s=>state.active[s.name]);
+  const allNames=seriesNames();
+  const stacked=state.chartType==='stack';
+  const type=state.chartType==='line'?'line':'bar';
+  const datasets=series.map(s=>{
+    const idx=allNames.indexOf(s.name);const c=PALETTE[idx%PALETTE.length];
+    return {label:s.name,data:s.values.slice(f,t+1),
+      borderColor:c,backgroundColor: state.chartType==='line'? c+'22' : c,
+      borderWidth:2.2,pointRadius:0,pointHoverRadius:5,tension:.32,fill:false,
+      stack: stacked?'s':undefined,borderRadius: type==='bar'?4:0};
+  });
+  document.getElementById('mainTitle').textContent='Evolução mensal · '+(state.view==='canais'?'Sessões por canal':state.metric);
+  document.getElementById('mainDesc').textContent=`${series.length} séries · ${fmtMonth(MONTHS[f])} a ${fmtMonth(MONTHS[t])}`;
+  mainChart=new Chart(ctx,{type,data:{labels,datasets},
+    options:{...baseOpts,scales:{x:{...baseOpts.scales.x,stacked},y:{...baseOpts.scales.y,stacked}}}});
+}
+
+function renderSideChart(){
+  const t=state.to;
+  const ctx=document.getElementById('sideChart');
+  if(sideChart)sideChart.destroy();
+  if(state.view==='amp'){
+    document.getElementById('sideTitle').textContent='Share AMP · último mês';
+    document.getElementById('sideDesc').textContent='Participação no mês final da série.';
+    const last=DATA.amp.rows[DATA.amp.rows.length-1];
+    sideChart=new Chart(ctx,{type:'doughnut',data:{labels:['AMP','Web'],
+      datasets:[{data:[last.amp,last.nonAmp],backgroundColor:['#820AD1','#A24BE0'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+        plugins:{legend:{labels:{color:'#1A1326',font:{family:'IBM Plex Sans'}}},
+        tooltip:{callbacks:{label:c=>' '+c.label+': '+fmtFull(c.parsed)}}}}});
+    document.getElementById('sideNote').textContent='Mês de referência: '+fmtMonth(last.month);
+    return;
+  }
+  const series=currentSeries().filter(s=>state.active[s.name]);
+  const allNames=seriesNames();
+  const vals=series.map(s=>s.values[t]||0);
+  const labs=series.map(s=>s.name);
+  const cols=series.map(s=>PALETTE[allNames.indexOf(s.name)%PALETTE.length]);
+  document.getElementById('sideTitle').textContent='Composição · '+fmtMonth(MONTHS[t]);
+  document.getElementById('sideDesc').textContent='Participação das séries ativas no último mês.';
+  sideChart=new Chart(ctx,{type:'doughnut',data:{labels:labs,datasets:[{data:vals,backgroundColor:cols,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'right',labels:{color:'#4A4458',font:{family:'IBM Plex Sans',size:11},boxWidth:10,padding:8}},
+      tooltip:{callbacks:{label:c=>{const tot=vals.reduce((a,b)=>a+b,0);return ' '+c.label+': '+fmtFull(c.parsed)+' ('+(c.parsed/tot*100).toFixed(1)+'%)';}}}}}});
+  document.getElementById('sideNote').textContent='';
+}
+
+/* ---------- table ---------- */
+function renderTable(){
+  const tb=document.getElementById('table');
+  const f=state.from,t=state.to;
+  if(state.view==='amp'){
+    const rows=DATA.amp.rows;
+    let h='<thead><tr><th>Mês</th><th>AMP</th><th>Non-AMP</th><th>Total</th><th>Share AMP</th><th>Share Web</th></tr></thead><tbody>';
+    rows.forEach(r=>{h+=`<tr><td>${fmtMonth(r.month)}</td><td class="v">${fmtFull(r.amp)}</td><td class="v">${fmtFull(r.nonAmp)}</td><td class="v">${fmtFull(r.total)}</td><td class="v">${(r.shareAmp*100).toFixed(1)}%</td><td class="v">${(r.shareNonAmp*100).toFixed(1)}%</td></tr>`;});
+    tb.innerHTML=h+'</tbody>';return;
+  }
+  const series=currentSeries().filter(s=>state.active[s.name]);
+  let h='<thead><tr><th>Série</th>';
+  MONTHS.slice(f,t+1).forEach(m=>h+=`<th>${fmtMonth(m)}</th>`);
+  h+='<th>MoM</th><th>YoY</th></tr></thead><tbody>';
+  series.forEach(s=>{
+    h+=`<tr><td>${s.name}</td>`;
+    s.values.slice(f,t+1).forEach(v=>h+=`<td class="v">${fmtFull(v)}</td>`);
+    const mc=s.mom>=0?'pos':'neg', yc=s.yoy>=0?'pos':'neg';
+    h+=`<td class="v ${mc}">${fmtPct(s.mom)}</td><td class="v ${yc}">${fmtPct(s.yoy)}</td></tr>`;
+  });
+  tb.innerHTML=h+'</tbody>';
+}
+
+/* ---------- master render ---------- */
+function render(){
+  document.getElementById('periodLabel').textContent=fmtMonth(MONTHS[state.from])+' — '+fmtMonth(MONTHS[state.to]);
+  // toggle controls per view
+  const ampView=state.view==='amp';
+  document.getElementById('metricCtl').classList.toggle('hide',state.view!=='conteudo');
+  document.getElementById('chipsCtl').classList.toggle('hide',ampView);
+  document.getElementById('chartTypeCtl').classList.toggle('hide',ampView);
+  document.getElementById('toggleAll').classList.toggle('hide',ampView);
+  document.getElementById('from').parentElement.classList.toggle('hide',ampView);
+  document.getElementById('to').parentElement.classList.toggle('hide',ampView);
+  document.getElementById('chipsLabel').textContent=state.view==='canais'?'Canais':'Categorias';
+  if(!ampView)buildChips();
+  renderKPIs();renderMainChart();renderSideChart();renderTable();
+  const n=ampView?DATA.amp.rows.length:currentSeries().filter(s=>state.active[s.name]).length;
+  document.getElementById('rowcount').textContent=ampView?DATA.amp.rows.length+' meses':n+' séries ativas';
+}
+
+/* ---------- events ---------- */
+document.querySelectorAll('#tabs .tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');state.view=b.dataset.view;state._rebuildActive=true;state.active={};render();
+});
+document.getElementById('metric').onchange=e=>{state.metric=e.target.value;state._rebuildActive=true;state.active={};render();};
+document.getElementById('from').onchange=e=>{state.from=+e.target.value;if(state.from>state.to){state.to=state.from;document.getElementById('to').value=state.to;}render();};
+document.getElementById('to').onchange=e=>{state.to=+e.target.value;if(state.to<state.from){state.from=state.to;document.getElementById('from').value=state.from;}render();};
+document.querySelectorAll('#chartType button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#chartType button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');state.chartType=b.dataset.t;render();});
+document.getElementById('toggleAll').onclick=()=>{
+  const names=seriesNames();const anyOff=names.some(n=>!state.active[n]);
+  names.forEach(n=>state.active[n]=anyOff);render();};
+
+buildMonthSelectors();render();
+</script>
+</body>
+</html>
